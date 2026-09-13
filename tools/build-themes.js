@@ -77,6 +77,18 @@ const SOURCES = [
     ['處處吻', '楊千嬅'], ['少年中國說', '張杰'], ['惡作劇', '王藍茵'], ['不如', '秦海清'],
   ] },
 
+  // 台灣獨立樂團:歌單很少,主要靠列樂團名單,抓每團 Apple 上最熱門的幾首
+  { id: 'pl.b362446682f543a3bfb40305ebb69e99', name: '破格之聲',             lang: 'auto',  tags: [] },
+  { id: 'pl.ac38fdf2344841a497040d6d03b501db', name: '金曲37 最佳樂團獎入圍', lang: 'auto',  tags: ['indie'] },
+  { name: '台灣獨立樂團', lang: 'mando', tags: ['indie'], perArtist: 15, artists: [
+    '告五人', '草東沒有派對', '落日飛車', '傷心欲絕', '拍謝少年', '茄子蛋', '美秀集團', '甜約翰',
+    '老王樂隊', 'deca joins', '康士坦的變化球', '滅火器', '大象體操', '溫蒂漫步', '淺堤', '椅子樂團',
+    '理想混蛋', '宇宙人', '麋先生', '八三夭', '旺福', '1976', '透明雜誌', '回聲樂團',
+    '圖騰樂團', '珂拉琪', '血肉果汁機', '生祥樂隊', '庸俗救星', '恐龍的皮', '好樂團', '傻子與白痴',
+    'icyball 冰球樂團', '無妄合作社', '漂流出口', '海豚刑警', '南西肯恩', '午夜乒乓', '棉花糖', '自由發揮',
+    '四分衛', '董事長樂團',
+  ] },
+
   // 華語
   { id: 'pl.6d8228f57b864a4296dc02d9761a0d9b', name: '華語流行樂：重溫熱播', lang: 'mando', tags: [], chart: true },
   { id: 'pl.4a2675e2e5724648a753c4083677df1a', name: '抖音華語熱歌精選',     lang: 'auto',  tags: [] },
@@ -108,13 +120,15 @@ const SOURCES = [
   { id: 'pl.e50ccee7318043eaaf8e8e28a2a55114', name: '2000 年代熱門歌曲',    lang: 'auto',  tags: [] },
   { id: 'pl.6b1b5dfda067443481265436811002f1', name: '2010 年代熱門歌曲',    lang: 'auto',  tags: [] },
 
-  // 動漫 / 影視
-  { id: 'pl.cc0d3b8092354e1da8cff6a0d8ca9f38', name: '開唱：動漫音樂',       lang: 'jp',    tags: ['ost'] },
-  { id: 'pl.91aa9e8d66484504a49ff923a5f91b97', name: '90 年代動畫金曲',      lang: 'jp',    tags: ['ost'] },
-  { id: 'pl.80708b2d660f4d848f2154d845320b17', name: '2000 年代動畫金曲',    lang: 'jp',    tags: ['ost'] },
-  { id: 'pl.407f5703ceb14a53a720d0fc5a3e4f3c', name: '2010 年代動畫金曲',    lang: 'jp',    tags: ['ost'] },
-  { id: 'pl.243f4762e0044ef18392e4a231e801ae', name: '那些年追的偶像劇',     lang: 'mando', tags: ['ost'] },
-  { id: 'pl.6aa75ab6e7ed4dd4a659abb687584d2e', name: '熱門韓劇主題曲',       lang: 'kpop',  tags: ['ost'] },
+  // 動漫
+  { id: 'pl.cc0d3b8092354e1da8cff6a0d8ca9f38', name: '開唱：動漫音樂',       lang: 'jp',    tags: ['anime'] },
+  { id: 'pl.91aa9e8d66484504a49ff923a5f91b97', name: '90 年代動畫金曲',      lang: 'jp',    tags: ['anime'] },
+  { id: 'pl.80708b2d660f4d848f2154d845320b17', name: '2000 年代動畫金曲',    lang: 'jp',    tags: ['anime'] },
+  { id: 'pl.407f5703ceb14a53a720d0fc5a3e4f3c', name: '2010 年代動畫金曲',    lang: 'jp',    tags: ['anime'] },
+
+  // 影視(另外,商店曲名或專輯寫著主題曲 / 插曲 / 原聲帶的歌也會自動標成 drama)
+  { id: 'pl.243f4762e0044ef18392e4a231e801ae', name: '那些年追的偶像劇',     lang: 'mando', tags: ['drama'] },
+  { id: 'pl.6aa75ab6e7ed4dd4a659abb687584d2e', name: '熱門韓劇主題曲',       lang: 'kpop',  tags: ['drama'] },
 ];
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -191,29 +205,35 @@ function saveCache(cache) {
   fs.writeFileSync(CACHE, JSON.stringify(cache));
 }
 
-// 歌手的熱門歌曲(照熱門度排),回傳正規化過的歌名
+// 歌手的熱門歌曲(照熱門度排)
+async function artistSongs(artistId) {
+  const data = await itunes(`lookup?id=${artistId}&entity=song&limit=${TOP_N}&country=TW`);
+  await sleep(700);
+  return (data.results || []).filter(r => r.kind === 'song');
+}
+
+// 同上,只要正規化過的歌名(算熱門度用),查過就記在快取
 async function artistTop(artistId, cache) {
   if (cache.byId[artistId]) return cache.byId[artistId];
-  const data = await itunes(`lookup?id=${artistId}&entity=song&limit=${TOP_N}&country=TW`);
   const titles = [];
-  for (const r of data.results || []) {
-    if (r.kind !== 'song') continue;
+  for (const r of await artistSongs(artistId)) {
     const k = norm(cleanTitle(r.trackName));
     if (!titles.includes(k)) titles.push(k);
   }
   cache.byId[artistId] = titles;
-  await sleep(700);
   return titles;
 }
 
-// songs.js 的歌沒有 artistId,用歌手名字查一次
-async function artistIdByName(name, cache) {
-  if (name in cache.byName) return cache.byName[name];
+// 用歌手名字查 artistId。strict 的時候名字要完全對上,不拿搜尋的第一筆湊數
+async function artistIdByName(name, cache, strict = false) {
+  const key = (strict ? 'strict:' : '') + name;
+  if (key in cache.byName) return cache.byName[key];
   const data = await itunes('search?' + new URLSearchParams({ term: name, entity: 'musicArtist', country: 'TW', limit: '5' }));
-  const hit = (data.results || []).find(r => norm(r.artistName) === norm(name)) || (data.results || [])[0];
-  cache.byName[name] = hit ? hit.artistId : null;
+  const hit = (data.results || []).find(r => norm(r.artistName) === norm(name) || norm(r.artistName).includes(norm(name)))
+    || (strict ? null : (data.results || [])[0]);
+  cache.byName[key] = hit ? hit.artistId : null;
   await sleep(1500);
-  return cache.byName[name];
+  return cache.byName[key];
 }
 
 /* ---------- 比對與分類 ---------- */
@@ -239,6 +259,9 @@ const BAD = /live|instrumental|karaoke|remix|伴奏|現場|演唱會|純音樂|a
 const BAD_ALBUM = /第\s*\d+\s*期|演唱會|跨年|卡拉|karaoke|オルゴール|音樂盒|instrumental|伴奏/i;
 
 const KANA = /[぀-ヿ]/, HANGUL = /[가-힯]/, HAN = /[一-鿿]/;
+
+// 電影、電視劇、影集的歌。「動畫」不在裡面 —— 動畫歌來自動漫歌單,標 anime
+const DRAMA = /主題曲|插曲|片頭曲|片尾曲|推廣曲|原聲帶|電影|電視劇|影集|劇集|偶像劇|韓劇|\bOST\b|soundtrack/i;
 
 function guessLang(item, hint) {
   const t = item.trackName || '';
@@ -275,8 +298,26 @@ function yearOf(item) {
     if (!fromSource.get(id).has(i)) fromSource.get(id).set(i, rank);
   };
   const searched = new Map();     // trackId → 搜尋結果(跟 lookup 回來的欄位一樣)
+  const cache = loadCache();
   for (let i = 0; i < SOURCES.length; i++) {
     const src = SOURCES[i];
+    if (src.artists) {
+      const miss = [];
+      let got = 0;
+      for (const name of src.artists) {
+        try {
+          const id = await artistIdByName(name, cache, true);
+          if (!id) { miss.push(name); continue; }
+          const songs = (await artistSongs(id)).filter(r => r.previewUrl).slice(0, src.perArtist || 15);
+          songs.forEach((r, pos) => { searched.set(String(r.trackId), r); addFrom(String(r.trackId), i, pos / songs.length); });
+          got += songs.length;
+        } catch (e) { miss.push(`${name}(${e.message})`); }
+      }
+      saveCache(cache);
+      console.log(`樂團 ${src.name}:${src.artists.length - miss.length} 團、${got} 首`);
+      if (miss.length) console.log(`   沒找到:${miss.join('、')}`);
+      continue;
+    }
     if (src.songs) {
       const miss = [];
       for (const [title, artist] of src.songs) {
@@ -321,6 +362,8 @@ function yearOf(item) {
 
     const sources = [...srcRank.keys()].map(i => SOURCES[i]);
     const tags = [...new Set(sources.flatMap(s => s.tags))];
+    // 商店曲名常帶「(電影《⋯》主題曲)」—— 動畫歌單來的不算,那些歸動漫
+    if (!tags.includes('anime') && DRAMA.test(`${item.trackName} ${item.collectionName || ''}`)) tags.push('drama');
     const year = yearOf(item);
     const hint = (sources.find(s => s.lang !== 'auto') || { lang: 'auto' }).lang;
     // 排行榜上越前面分數越高;同一首上多張榜就疊加
@@ -355,10 +398,9 @@ function yearOf(item) {
 
   // 4. 熱門度
   const list = [...extras.values()];
-  const cache = loadCache();
   const everyone = core.concat(list);
-  const artistSongs = {};   // 歌手在整個曲庫裡有幾首 —— 越多代表越紅
-  everyone.forEach(s => { const k = norm(s.artist); artistSongs[k] = (artistSongs[k] || 0) + 1; });
+  const artistCount = {};   // 歌手在整個曲庫裡有幾首 —— 越多代表越紅
+  everyone.forEach(s => { const k = norm(s.artist); artistCount[k] = (artistCount[k] || 0) + 1; });
 
   const todo = new Set(everyone.map(s => (signals[s.id] && signals[s.id].artistId) || `name:${s.artist}`));
   console.log(`\n查 ${todo.size} 位歌手的熱門歌曲(已快取 ${Object.keys(cache.byId).length} 位)⋯`);
@@ -381,7 +423,7 @@ function yearOf(item) {
     const idx = sg.top.indexOf(sg.title);
     const pop =
         1.0 * (idx >= 0 ? 1 - idx / TOP_N : 0)                  // 在自己歌手的熱門歌曲排第幾
-      + 0.7 * Math.min(artistSongs[norm(s.artist)], 10) / 10    // 歌手在曲庫裡有幾首
+      + 0.7 * Math.min(artistCount[norm(s.artist)], 10) / 10    // 歌手在曲庫裡有幾首
       + 1.0 * Math.min(sg.chart, 1.5)                          // 排行榜名次
       + 0.5 * Math.min(sg.lists, 3) / 3                        // 被幾張歌單收
       + (isCore.has(s.id) ? 1.0 : 0);                           // songs.js 是手挑的

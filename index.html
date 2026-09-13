@@ -578,8 +578,8 @@ function stagePool(n){
 
 /* ---------- 競速模式的主題 ----------
 
-   「全部」就是原本的競速模式:只出 songs.js 那 340 首,套曲風配額。
-   其他主題從 songs.js + themes.js(Apple Music 歌單匯入的)合起來的曲庫裡篩,不套配額。
+   所有主題都從 songs.js + themes.js(Apple Music 歌單匯入的)合起來的曲庫裡篩。
+   「全部」整份都收,並套曲風配額(每局要有台語、經典、非中文);其他主題不套配額。
    年代用的 year 是商店標的發行年,只是大概 —— 所以年代主題只收華語和台語,
    不然會被一大堆年份不準的日本動畫歌灌滿。
    曲庫少於 MIN_THEME_SONGS 首的主題不顯示。
@@ -587,18 +587,20 @@ function stagePool(n){
    答案只從主題裡熱門度(pop)前 ANSWER_TOP 的歌抽,其他的歌只當九宮格選項 ——
    曲庫大了之後,不這樣做會一直出沒聽過的歌。pop 怎麼算寫在 tools/build-themes.js。 */
 const MIN_THEME_SONGS = 30;
-const ANSWER_TOP = 0.2;
+const ANSWER_TOP = 0.5;
 const ZH = ['mando', 'classic', 'tw'];
 const hasTag = (s, t) => (s.tags || []).includes(t);
 const THEMES = [
-  { key: 'all',    name: '全部',       test: null },
+  { key: 'all',    name: '全部',       test: () => true },
   { key: 'zh',     name: '中文',       test: s => s.genre === 'mando' || s.genre === 'classic' },
   { key: 'tw',     name: '台語',       test: s => s.genre === 'tw' },
   { key: 'west',   name: '西洋',       test: s => s.genre === 'west' },
   { key: 'kpop',   name: '韓文',       test: s => s.genre === 'kpop' },
   { key: 'jp',     name: '日文',       test: s => s.genre === 'jp' },
   { key: 'tiktok', name: '抖音歌',     test: s => ZH.includes(s.genre) && hasTag(s, 'tiktok') },
-  { key: 'ost',    name: '動漫 · 影視', test: s => hasTag(s, 'ost') },
+  { key: 'anime',  name: '動漫',       test: s => hasTag(s, 'anime') },
+  { key: 'drama',  name: '影視',       test: s => hasTag(s, 'drama') },
+  { key: 'indie',  name: '台灣獨立樂團', test: s => hasTag(s, 'indie') },
   { key: 'old',    name: '經典老歌',   test: s => ZH.includes(s.genre) && (s.genre === 'classic' || (s.year && s.year < 2000)) },
   { key: 'y2000',  name: '2000 年代',  test: s => ZH.includes(s.genre) && s.year >= 2000 && s.year < 2010 },
   { key: 'y2010',  name: '2010 年代',  test: s => ZH.includes(s.genre) && s.year >= 2010 && s.year < 2020 },
@@ -610,12 +612,11 @@ const EXTRA_SONGS = window.EXTRA_SONGS || [];
 const ALL_SONGS = (window.SONGS || []).concat(EXTRA_SONGS);
 
 function themeByKey(key){ return THEMES.find(t => t.key === key) || THEMES[0]; }
-function themePool(theme){ return theme.test ? ALL_SONGS.filter(theme.test) : (window.SONGS || []); }
+function themePool(theme){ return ALL_SONGS.filter(theme.test); }
 
-// 會被出成答案的歌。「全部」是手挑的 340 首,整份都算
+// 會被出成答案的歌
 function answerPool(theme){
   const pool = themePool(theme);
-  if(!theme.test) return pool;
   const n = Math.min(pool.length, Math.max(MIN_THEME_SONGS, Math.ceil(pool.length * ANSWER_TOP)));
   return pool.slice().sort((a, b) => (b.pop || 0) - (a.pop || 0)).slice(0, n);
 }
