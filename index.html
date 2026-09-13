@@ -355,6 +355,25 @@ button:focus-visible,input:focus-visible,a:focus-visible{
 .pop.clear .pop-card{box-shadow:inset 0 0 0 1px var(--bottle), 0 18px 48px rgba(0,0,0,.5)}
 .pop.clear .pop-card .big{font-size:var(--t-h1)}
 
+/* ═══════════ 競速:選主題 ═══════════ */
+#screen-theme{gap:var(--s5)}
+.theme-head h2{margin:0;font-weight:var(--w-title);font-size:var(--t-h2);color:var(--foam)}
+.theme-head p{margin:var(--s2) 0 0;font-size:var(--t-small);color:var(--dim);font-weight:var(--w-quiet)}
+.themes{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2)}
+.theme{
+  display:flex;flex-direction:column;align-items:flex-start;gap:var(--s1);
+  padding:var(--s3) var(--s4);text-align:left;
+  background:var(--tide);border-radius:var(--r-touch);
+  transition:transform 120ms var(--ease);
+}
+.theme:active{transform:scale(.97)}
+.theme .n{font-weight:var(--w-strong);font-size:var(--t-body)}
+.theme .s{font-size:var(--t-small);color:var(--dim);font-weight:var(--w-quiet);font-variant-numeric:tabular-nums}
+.theme .s b{color:var(--bottle);font-weight:var(--w-item)}
+/* 「全部」是原本的競速模式,給它整列 */
+.theme.wide{grid-column:1 / -1}
+#screen-theme .btn.ghost{margin-top:auto}
+
 @media (max-height:680px){
   .screen{padding-top:var(--s5);padding-bottom:var(--s5)}
   #screen-start,#screen-result{gap:var(--s4)}
@@ -410,6 +429,16 @@ button:focus-visible,input:focus-visible,a:focus-visible{
   </div>
 </div>
 
+<!-- ═══════════ 競速:選主題 ═══════════ -->
+<div class="screen" id="screen-theme" hidden>
+  <div class="theme-head">
+    <h2>選一個主題</h2>
+    <p>十題,每題 12 秒,比分數</p>
+  </div>
+  <div class="themes" id="themes"></div>
+  <button class="btn ghost" id="btn-theme-back">返回</button>
+</div>
+
 <!-- ═══════════ 載入 ═══════════ -->
 <div class="screen" id="screen-load" hidden>
   <div class="spin" id="load-spin"></div>
@@ -420,7 +449,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{
 <!-- ═══════════ 遊戲 ═══════════ -->
 <div class="screen" id="screen-play" hidden>
   <div class="hud">
-    <div class="hud-stage" id="hud-stage" hidden>
+    <div class="hud-stage" id="hud-stage">
       <span class="lv" id="hud-lv"></span>
       <span class="un" id="hud-un"></span>
     </div>
@@ -485,6 +514,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{
 <script src="songs.js"></script>
 <script src="decoys.js"></script>
 <script src="previews.js"></script>
+<script src="themes.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════
    金曲猜歌王
@@ -546,10 +576,42 @@ function stagePool(n){
   return (window.SONGS || []).filter(s => g.includes(s.genre));
 }
 
+/* ---------- 競速模式的主題 ----------
+
+   「全部」就是原本的競速模式:只出 songs.js 那 340 首,套曲風配額。
+   其他主題從 songs.js + themes.js(Apple Music 歌單匯入的)合起來的曲庫裡篩,不套配額。
+   年代用的 year 是商店標的發行年,只是大概 —— 所以年代主題只收華語和台語,
+   不然會被一大堆年份不準的日本動畫歌灌滿。
+   曲庫少於 MIN_THEME_SONGS 首的主題不顯示。 */
+const MIN_THEME_SONGS = 30;
+const ZH = ['mando', 'classic', 'tw'];
+const hasTag = (s, t) => (s.tags || []).includes(t);
+const THEMES = [
+  { key: 'all',    name: '全部',       test: null },
+  { key: 'zh',     name: '中文',       test: s => s.genre === 'mando' || s.genre === 'classic' },
+  { key: 'tw',     name: '台語',       test: s => s.genre === 'tw' },
+  { key: 'west',   name: '西洋',       test: s => s.genre === 'west' },
+  { key: 'kpop',   name: '韓文',       test: s => s.genre === 'kpop' },
+  { key: 'jp',     name: '日文',       test: s => s.genre === 'jp' },
+  { key: 'tiktok', name: '抖音歌',     test: s => hasTag(s, 'tiktok') },
+  { key: 'ost',    name: '動漫 · 影視', test: s => hasTag(s, 'ost') },
+  { key: 'old',    name: '經典老歌',   test: s => ZH.includes(s.genre) && (s.genre === 'classic' || (s.year && s.year < 2000)) },
+  { key: 'y2000',  name: '2000 年代',  test: s => ZH.includes(s.genre) && s.year >= 2000 && s.year < 2010 },
+  { key: 'y2010',  name: '2010 年代',  test: s => ZH.includes(s.genre) && s.year >= 2010 && s.year < 2020 },
+];
+
+// 把 themes.js 查到的 year / tags 掛到每首歌身上
+const EXTRA_SONGS = window.EXTRA_SONGS || [];
+(window.SONGS || []).concat(EXTRA_SONGS).forEach(s => Object.assign(s, (window.SONG_META || {})[s.id]));
+const ALL_SONGS = (window.SONGS || []).concat(EXTRA_SONGS);
+
+function themeByKey(key){ return THEMES.find(t => t.key === key) || THEMES[0]; }
+function themePool(theme){ return theme.test ? ALL_SONGS.filter(theme.test) : (window.SONGS || []); }
+
 // 這一局實際跑的規則。開局時依模式填,遊戲迴圈只看這個,不看 CONFIG。
 const R = { questionCount: CONFIG.questionCount, timeLimit: CONFIG.timeLimit };
 
-const SCREENS = ['screen-start','screen-load','screen-play','screen-result'];
+const SCREENS = ['screen-start','screen-theme','screen-load','screen-play','screen-result'];
 function show(id){
   SCREENS.forEach(s => $(s).hidden = (s !== id));
   window.scrollTo(0,0);
@@ -750,11 +812,12 @@ const Store = {
     try{ localStorage.setItem(this.KEY, JSON.stringify(list.slice(-50))); }catch(e){}
   },
 
-  /* 「你的最佳」只認競速模式的分數。
+  /* 「你的最佳」只認競速模式的分數,而且每個主題分開算 —— 主題難度差很多。
      闖關某一關的分數不能拿來比 —— 第 1 關只有華語 226 首,比全庫好猜太多。
-     舊紀錄沒有 mode 欄位,那是還沒有闖關模式以前存的,一律算競速。 */
-  best(){
-    return this.all().reduce((m, r) => r.mode === 'stage' ? m : Math.max(m, r.score || 0), 0);
+     舊紀錄沒有 mode / theme 欄位,那是還沒有闖關模式和主題以前存的,一律算競速的「全部」。 */
+  best(theme = 'all'){
+    return this.all().reduce((m, r) =>
+      r.mode === 'stage' || (r.theme || 'all') !== theme ? m : Math.max(m, r.score || 0), 0);
   },
   plays(){ return this.all().length; },
 
@@ -795,9 +858,9 @@ function sizeClass(label){
   return '';
 }
 
-// 選項池 = 題庫裡的歌 + 純干擾歌名
+// 選項池 = 題庫裡的歌 + 歌單匯入的歌 + 純干擾歌名
 function optionPool(){
-  return (window.SONGS || []).concat(window.DECOYS || []);
+  return ALL_SONGS.concat(window.DECOYS || []);
 }
 
 /* songs  這一局可以出的歌(闖關模式只給該關解鎖的曲庫)
@@ -807,10 +870,15 @@ function buildQuestions(songs, quota){
   songs = songs || window.SONGS || [];
 
   // 抽題分三步:固定配額 → 非中文保底 → 剩下的名額自由補
-  const picked = [];
+  // 同名的歌一局只出一首 —— 歌單匯入的曲庫裡,同一首歌可能掛著兩種寫法的歌手名
+  const picked = [], pickedTitle = new Set();
   const take = (list, n) => {
-    if(n <= 0) return;
-    picked.push(...shuffle(list.filter(s => !picked.includes(s))).slice(0, n));
+    for(const s of shuffle(list)){
+      if(n <= 0) break;
+      const key = titleKey(s.title);
+      if(picked.includes(s) || pickedTitle.has(key)) continue;
+      picked.push(s); pickedTitle.add(key); n--;
+    }
   };
 
   if(quota){
@@ -872,7 +940,7 @@ function buildQuestions(songs, quota){
 /* ---------- 遊戲狀態 ---------- */
 const G = {
   questions: [], index: 0, total: 0, log: [],
-  mode: 'speed', stage: 1,
+  mode: 'speed', stage: 1, theme: 'all',
   soundOk: false, timer: null, clip: null, deadline: 0, locked: false
 };
 
@@ -890,8 +958,7 @@ function refreshStartBtn(){
   const bestStage = Store.bestStage();
   $('stage-best').textContent = why ? ''
     : (bestStage ? `最佳紀錄 第 ${bestStage} 關` : '六關,一關比一關難');
-  $('speed-best').textContent = why ? ''
-    : (Store.best() ? `你的最佳 ${Store.best().toLocaleString()} 分` : '十題,比分數');
+  $('speed-best').textContent = why ? '' : '選主題,十題比分數';
 
   // 還沒測聲音時,把視線引到聲音那一區
   $('sound').classList.toggle('want', !G.soundOk);
@@ -928,10 +995,27 @@ $('btn-vol').addEventListener('click', () => {
   $('btn-vol').setAttribute('aria-expanded', String(opening));
 });
 
-$('btn-speed').addEventListener('click', () => startGame('speed'));
+function renderThemes(){
+  $('themes').innerHTML = '';
+  for(const theme of THEMES){
+    const n = themePool(theme).length;
+    if(n < MIN_THEME_SONGS) continue;
+    const best = Store.best(theme.key);
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'theme' + (theme.key === 'all' ? ' wide' : '');
+    b.innerHTML = `<span class="n">${theme.name}</span>`
+      + `<span class="s">${n.toLocaleString()} 首${best ? ` · 最佳 <b>${best.toLocaleString()}</b>` : ''}</span>`;
+    b.addEventListener('click', () => startGame('speed', theme.key));
+    $('themes').appendChild(b);
+  }
+  show('screen-theme');
+}
+
+$('btn-speed').addEventListener('click', renderThemes);
 $('btn-stage').addEventListener('click', () => startGame('stage'));
-$('btn-again').addEventListener('click', () =>
-  G.mode === 'stage' ? startGame('stage') : show('screen-start'));
+$('btn-theme-back').addEventListener('click', () => show('screen-start'));
+$('btn-again').addEventListener('click', () => startGame(G.mode, G.theme));
 $('btn-home').addEventListener('click', () => show('screen-start'));
 
 /* ---------- 開局 ---------- */
@@ -966,8 +1050,9 @@ $('btn-retry').addEventListener('click', async () => {
   if(await loadFirst()){ show('screen-play'); nextQuestion(); }
 });
 
-async function startGame(mode){
+async function startGame(mode, theme = 'all'){
   G.mode = mode;
+  G.theme = theme;
   G.stage = 1;
   await playRound();
 }
@@ -983,10 +1068,13 @@ async function playRound(){
     $('goal').textContent = ` / ${STAGES[G.stage - 1].need.toLocaleString()}`;
   }else{
     Object.assign(R, { questionCount: CONFIG.questionCount, timeLimit: CONFIG.timeLimit });
-    G.questions = buildQuestions(window.SONGS, true);
+    const theme = themeByKey(G.theme);
+    const pool = themePool(theme);
+    G.questions = buildQuestions(pool, theme.key === 'all');
+    $('hud-lv').textContent = theme.name;
+    $('hud-un').textContent = `${pool.length.toLocaleString()} 首`;
     $('goal').textContent = '';
   }
-  $('hud-stage').hidden = G.mode !== 'stage';
   G.index = 0; G.total = 0; G.log = [];
 
   show('screen-load');
@@ -1123,11 +1211,12 @@ function finish(){
 
   const entry = {
     mode: 'speed',
+    theme: G.theme,
     score: G.total,
     correct: G.log.filter(r => r.correct).length,
     at: Date.now()
   };
-  const prevBest = Store.best();
+  const prevBest = Store.best(G.theme);
   Store.save(entry);
   $('btn-again').textContent = '再玩一次';
 
@@ -1135,7 +1224,7 @@ function finish(){
   $('res-title').textContent = rank.title;
   $('res-line').textContent  = rank.line;
   $('res-score').textContent = G.total.toLocaleString();
-  $('res-meta').textContent  = `答對 ${entry.correct} 題,共 ${R.questionCount} 題`;
+  $('res-meta').textContent  = `${themeByKey(G.theme).name} · 答對 ${entry.correct} 題,共 ${R.questionCount} 題`;
 
   const nextEl = $('res-next');
   nextEl.innerHTML = prevBest && G.total > prevBest
