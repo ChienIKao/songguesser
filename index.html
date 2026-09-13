@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#0B0C18">
-<title>金曲猜歌王 · NTUPM 18th</title>
+<title>金曲猜歌王</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600;700;900&display=swap">
@@ -13,7 +13,7 @@
 /* ═══════════════════════════════════════════════════════════
    金曲猜歌王 — 視覺系統「深夜混音帶」
 
-   顏色全部取樣自 assets/theme.png,只有 5 個色相。
+   只有 5 個色相。
    黃色 (--bottle) 只出現在兩種地方:主標題,以及得分 / 正解 / 達標。
    字體只有 Noto Serif TC 一個家族,層次靠字重不靠字級硬撐。
    明體橫畫細,深色底上小字會消失 —— 內文一律 500 起跳,九宮格 600。
@@ -61,33 +61,10 @@ body{
   text-wrap:pretty;
 }
 
-/* ── 主視覺 ──
-   用 webp:同一張圖 1038KB → 82KB(quality 90,平均誤差不到 1%,
-   而且還被下面那層遮罩壓掉)。這張圖是每個新訪客一定會下載的最大一筆,
-   佔開頁流量的八成 —— 原始的 theme.png 留在 assets/ 當母檔,頁面不引用它。
-
-   直式手機 cover 之後只看得到原圖中間 20% 的直條,而那正是圖裡
-   「NTUPM 18TH」社名字的位置 —— 會跟頁面標題疊在一起。
-   所以水平位移到 90%,改看留聲機與沙灘那側(那裡沒有字)。
-   遮罩在 32% 就近乎實色:文字從 37% 開始,壓在亮處對比只有 1.0。 */
+/* 背景:夜空色往上微微透出一點海面的藍,不放圖 */
 body::before{
-  content:"";position:fixed;inset:0;z-index:-2;
-  background:url("assets/theme.webp") 90% center/cover no-repeat;
-  filter:brightness(1.10) saturate(1.1);
-}
-body::after{
   content:"";position:fixed;inset:0;z-index:-1;
-  background:linear-gradient(180deg,
-    rgba(11,12,24,.28) 0%,
-    rgba(11,12,24,.12) 20%,
-    rgba(11,12,24,.88) 32%,
-    rgba(11,12,24,.96) 55%,
-    rgba(11,12,24,.98) 100%);
-  transition:background .4s ease;
-}
-/* 遊戲中:專心猜歌 */
-body.dim::after{
-  background:linear-gradient(180deg,rgba(11,12,24,.965),rgba(11,12,24,.985));
+  background:radial-gradient(120% 60% at 50% 0%, var(--deep) 0%, var(--night) 70%);
 }
 
 .screen{
@@ -124,26 +101,13 @@ button:focus-visible,input:focus-visible,a:focus-visible{
 
 /* ═══════════ 開始 ═══════════ */
 #screen-start{justify-content:flex-end;gap:var(--s5)}
-.eyebrow{font-weight:var(--w-quiet);font-size:var(--t-small);color:var(--dim);letter-spacing:.1em}
 .brand h1{
   font-weight:var(--w-title);font-size:var(--t-display);
   line-height:1.14;letter-spacing:.04em;
   margin:var(--s2) 0 var(--s3);color:var(--bottle);
 }
-.slogan{font-weight:var(--w-quiet);font-size:var(--t-small);line-height:2.2;color:var(--dim)}
 
-/* 底線輸入 —— 像卡帶標籤上的手寫欄位,不是方框 */
-.field{display:flex;align-items:center;gap:var(--s4)}
 .label{flex:none;width:3rem;font-size:var(--t-small);color:var(--dim);font-weight:var(--w-quiet)}
-input[type=text]{
-  flex:1;min-width:0;
-  background:none;border:0;border-bottom:1px solid var(--line-2);
-  padding:var(--s2) 0;color:var(--foam);
-  font-family:var(--face);font-weight:var(--w-body);font-size:var(--t-h3);
-  transition:border-color 160ms var(--ease);
-}
-input[type=text]::placeholder{color:rgba(207,202,240,.45);font-size:var(--t-body)}
-input[type=text]:focus{outline:0;border-bottom-color:var(--foam)}
 
 .entry{display:flex;flex-direction:column;gap:var(--s4)}
 .sound{display:flex;flex-direction:column;gap:var(--s4)}
@@ -177,24 +141,6 @@ input[type=text]:focus{outline:0;border-bottom-color:var(--foam)}
 .volicon[data-level="0"] .w1,
 .volicon[data-level="0"] .w2,
 .volicon[data-level="1"] .w2{opacity:.2}
-
-.startfoot{
-  display:flex;justify-content:space-between;align-items:center;gap:var(--s4);
-  font-size:var(--t-small);color:var(--dim);
-}
-.startfoot a{
-  display:inline-flex;align-items:center;gap:var(--s2);
-  color:var(--dim);text-decoration:none;padding:var(--s2) 0;
-  transition:color 160ms var(--ease);
-}
-.startfoot a .ig{
-  width:16px;height:16px;flex:none;
-  fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
-}
-/* 底線只畫在帳號底下,連圖示一起畫會變成穿過圖示的橫槓 */
-.startfoot a .handle{border-bottom:1px solid var(--line-2);padding-bottom:2px}
-.startfoot a:active{color:var(--foam)}
-.startfoot button{padding:var(--s2) 0;color:var(--dim)}
 
 /* ═══════════ 載入 ═══════════ */
 #screen-load{align-items:center;justify-content:center;text-align:center;gap:var(--s5)}
@@ -312,59 +258,6 @@ input[type=text]:focus{outline:0;border-bottom-color:var(--foam)}
 }
 .scorecard .next b{color:var(--bottle);font-weight:var(--w-item)}
 
-/* 成績跑出來多久了 —— 秒數一直跳,關主一眼就能分辨現場成績和翻出來的舊截圖 */
-.scorecard .fresh{
-  font-size:var(--t-small);color:var(--dim);font-weight:var(--w-quiet);
-  font-variant-numeric:tabular-nums;margin-top:var(--s2);
-}
-
-/* 結算的 IG:這一頁玩家看最久,也最可能順手追蹤 —— 比開始畫面放大一級並置中 */
-#screen-result .startfoot{justify-content:center}
-#screen-result .startfoot a{
-  font-size:var(--t-body);font-weight:var(--w-item);color:var(--foam);gap:var(--s3);
-}
-#screen-result .startfoot a .ig{width:22px;height:22px;stroke-width:1.6}
-#screen-result .startfoot a .handle{padding-bottom:3px}
-
-/* ── 迎新社課 ──
-   玩家在結算畫面停留最久,剛玩完心情也最好 —— 這是唯一該推社課的地方。
-   但它不能跟分數搶:黃色(--bottle)只給標籤和日期,標題用前景色,
-   其餘一律 --dim。整張卡靠一條 1px 的內框浮起來,不加陰影、不加圓角以外的裝飾。 */
-.promo{
-  padding:var(--s4);border-radius:var(--r-touch);
-  background:rgba(23,26,51,.62);
-  box-shadow:inset 0 0 0 1px var(--line);
-}
-.promo .tag{
-  display:flex;align-items:center;gap:var(--s3);
-  margin:0 0 var(--s3);
-  font-size:var(--t-body);font-weight:var(--w-strong);
-  color:var(--bottle);letter-spacing:.12em;
-}
-/* 標籤右邊那道漸淡的線 —— 把視線帶到日期上 */
-.promo .tag::after{
-  content:"";flex:1;height:1px;
-  background:linear-gradient(90deg,rgba(242,200,106,.5),rgba(242,200,106,0));
-}
-.promo ul{margin:0;padding:0;list-style:none}
-.promo li{
-  display:grid;grid-template-columns:auto auto 1fr;gap:var(--s3);align-items:baseline;
-  padding:var(--s3) 0;border-top:1px solid var(--line);font-size:var(--t-small);
-}
-.promo li .d{
-  font-weight:var(--w-title);font-size:var(--t-h3);color:var(--bottle);
-  font-variant-numeric:tabular-nums;letter-spacing:.01em;
-}
-.promo li .t{font-weight:var(--w-item);color:var(--foam);font-variant-numeric:tabular-nums}
-/* 星期是配角:知道是哪一天靠日期,星期只是讓人對得上自己的課表 */
-.promo li .t i{font-style:normal;font-weight:var(--w-quiet);color:var(--dim);margin-right:.4em}
-/* 地點跟時間一樣重要 —— 人要走到那裡去,不能比時間暗 */
-.promo li .p{font-weight:var(--w-item);color:var(--foam);text-align:right;white-space:nowrap}
-.promo .note{
-  margin:var(--s3) 0 0;font-size:var(--t-small);font-weight:var(--w-quiet);
-  color:var(--dim);line-height:1.7;
-}
-
 .misses{display:flex;flex-direction:column}
 .misses h4{margin:0 0 var(--s3);font-size:var(--t-small);color:var(--dim);font-weight:var(--w-quiet)}
 .misses ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column}
@@ -462,39 +355,6 @@ input[type=text]:focus{outline:0;border-bottom-color:var(--foam)}
 .pop.clear .pop-card{box-shadow:inset 0 0 0 1px var(--bottle), 0 18px 48px rgba(0,0,0,.5)}
 .pop.clear .pop-card .big{font-size:var(--t-h1)}
 
-/* ═══════════ 排行榜 ═══════════ */
-/* 幹部榜有 56 列,一定比一屏長。把這一屏鎖成視窗高度,
-   標題、「你擊敗幾位」和「返回」就固定在原位,只有名單自己捲 ——
-   不然整頁跟著捲,玩家滑到一半會找不到返回鍵。 */
-#screen-board{gap:var(--s4);height:100vh;height:100dvh}
-.board-head{padding:var(--s2) 0 var(--s3)}
-.board-head h2{margin:var(--s1) 0 0;font-weight:var(--w-title);font-size:var(--t-h2);color:var(--foam)}
-.board-list{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column}
-.rowitem{
-  display:grid;grid-template-columns:2rem 1fr auto;gap:var(--s4);align-items:baseline;
-  padding:var(--s3) 0;border-top:1px solid var(--line);
-}
-.rowitem .rk{font-weight:var(--w-strong);font-size:var(--t-h3);color:var(--dim);font-variant-numeric:tabular-nums}
-.rowitem .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:var(--w-item)}
-.rowitem .sc{color:var(--dim);font-variant-numeric:tabular-nums}
-.rowitem.top1 .rk,.rowitem.top2 .rk,.rowitem.top3 .rk{color:var(--bottle)}
-.rowitem.me{box-shadow:inset 3px 0 0 var(--foam);padding-left:var(--s3)}
-.rowitem.me .sc{color:var(--bottle)}
-.board-note{margin-top:var(--s2);font-size:var(--t-small);color:var(--dim);line-height:1.7}
-.board-note b{color:var(--bottle);font-weight:var(--w-item)}
-/* 自己不在前 20 名時,把自己那一列單獨釘在底下 —— 玩家最想知道的就是自己第幾 */
-/* 已經被超過的幹部:整列壓暗,讓還沒打敗的那些自己跳出來 */
-.rowitem.beaten{opacity:.45}
-.rowitem .nm .tag{
-  margin-left:var(--s2);font-size:var(--t-small);font-weight:var(--w-quiet);
-  color:var(--dim);letter-spacing:.05em;
-}
-.rowitem.me .nm .tag{color:var(--bottle)}
-.rowitem.me .rk{color:var(--foam);font-size:var(--t-body)}
-.fielderr{margin-top:var(--s2);font-size:var(--t-small);color:var(--miss);font-weight:var(--w-item)}
-.empty{color:var(--dim);font-size:var(--t-small);padding:var(--s7) 0;line-height:2.1}
-.empty b{display:block;color:var(--foam);font-weight:var(--w-title);font-size:var(--t-h3);margin-bottom:var(--s4)}
-
 @media (max-height:680px){
   .screen{padding-top:var(--s5);padding-bottom:var(--s5)}
   #screen-start,#screen-result{gap:var(--s4)}
@@ -509,20 +369,12 @@ input[type=text]:focus{outline:0;border-bottom-color:var(--foam)}
 <!-- ═══════════ 開始 ═══════════ -->
 <div class="screen" id="screen-start">
   <div class="brand">
-    <div class="eyebrow">台大流唱社</div>
     <h1>金曲猜歌王</h1>
-    <div class="slogan">我們不一定最會唱歌<br>但我們一定最會猜歌</div>
   </div>
 
   <div class="rule"></div>
 
   <div class="entry">
-    <div class="field">
-      <label class="label" for="nick">暱稱</label>
-      <input type="text" id="nick" maxlength="8" placeholder="2–8 個字,只會出現在這支手機上" autocomplete="off" enterkeyhint="done">
-      <div class="fielderr" id="nick-err" hidden></div>
-    </div>
-
     <div class="sound" id="sound">
     <div class="volrow">
       <span class="label">音量</span>
@@ -555,18 +407,6 @@ input[type=text]:focus{outline:0;border-bottom-color:var(--foam)}
     <button class="btn ghost" id="btn-speed" disabled>
       <span class="t">競速模式</span><span class="sub" id="speed-best"></span>
     </button>
-  </div>
-
-  <div class="startfoot">
-    <a href="https://www.instagram.com/ntupm__18th" target="_blank" rel="noopener" aria-label="Instagram @ntupm__18th">
-      <svg class="ig" viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="3" y="3" width="18" height="18" rx="5"/>
-        <circle cx="12" cy="12" r="4"/>
-        <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/>
-      </svg>
-      <span class="handle">ntupm__18th</span>
-    </a>
-    <button type="button" id="btn-board-1">幹部榜</button>
   </div>
 </div>
 
@@ -621,33 +461,11 @@ input[type=text]:focus{outline:0;border-bottom-color:var(--foam)}
     <div class="big" id="res-score">0</div>
     <div class="meta" id="res-meta">答對 0 題,共 10 題</div>
     <div class="next" id="res-next" hidden></div>
-    <div class="fresh" id="res-fresh"></div>
   </div>
   <div class="misses" id="res-misses"></div>
   <div class="row">
-    <button class="btn ghost" id="btn-board-2">幹部榜</button>
+    <button class="btn ghost" id="btn-home">回首頁</button>
     <button class="btn" id="btn-again">再玩一次</button>
-  </div>
-  <!-- 這個遊戲真正想達成的事:讓人來社課。
-       放在按鈕和 IG 中間 —— 上面是他自己的成績,下面是追蹤入口,
-       「更多資訊請追蹤 IG」那行剛好指著下面那個帳號。 -->
-  <section class="promo" aria-label="台大流唱迎新社課">
-    <h3 class="tag">台大流唱迎新社課</h3>
-    <ul>
-      <li><b class="d">9/16</b><span class="t"><i>週三</i>19:00</span><span class="p">共同 101</span></li>
-      <li><b class="d">9/17</b><span class="t"><i>週四</i>19:00</span><span class="p">共同 301</span></li>
-    </ul>
-    <p class="note">欲知更多資訊,請追蹤下面的 IG</p>
-  </section>
-  <div class="startfoot">
-    <a href="https://www.instagram.com/ntupm__18th" target="_blank" rel="noopener" aria-label="Instagram @ntupm__18th">
-      <svg class="ig" viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="3" y="3" width="18" height="18" rx="5"/>
-        <circle cx="12" cy="12" r="4"/>
-        <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/>
-      </svg>
-      <span class="handle">ntupm__18th</span>
-    </a>
   </div>
 </div>
 
@@ -664,25 +482,14 @@ input[type=text]:focus{outline:0;border-bottom-color:var(--foam)}
     <button class="btn ghost" id="btn-stage-quit">先不玩了</button>
   </div>
 </div>
-
-<!-- ═══════════ 幹部榜 ═══════════ -->
-<div class="screen" id="screen-board" hidden>
-  <div class="board-head">
-    <h2>流唱社幹部榜</h2>
-    <div class="board-note" id="board-note"></div>
-  </div>
-  <div class="board-list" id="board-list"></div>
-  <button class="btn ghost" id="btn-back">返回</button>
-</div>
 <script src="songs.js"></script>
 <script src="decoys.js"></script>
 <script src="previews.js"></script>
-<script src="crew.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════
    金曲猜歌王
-   完全不連線:題庫、干擾項、試聽網址、幹部榜、分數分布全都是
-   靜態檔,成績只存在玩家自己的手機裡。
+   完全不連線:題庫、干擾項、試聽網址全都是靜態檔,
+   成績只存在玩家自己的手機裡。
    ═══════════════════════════════════════════════════════ */
 
 const CONFIG = {
@@ -742,10 +549,9 @@ function stagePool(n){
 // 這一局實際跑的規則。開局時依模式填,遊戲迴圈只看這個,不看 CONFIG。
 const R = { questionCount: CONFIG.questionCount, timeLimit: CONFIG.timeLimit };
 
-const SCREENS = ['screen-start','screen-load','screen-play','screen-result','screen-board'];
+const SCREENS = ['screen-start','screen-load','screen-play','screen-result'];
 function show(id){
   SCREENS.forEach(s => $(s).hidden = (s !== id));
-  document.body.classList.toggle('dim', id === 'screen-play');
   window.scrollTo(0,0);
 }
 
@@ -773,7 +579,6 @@ function ensureCtx(){
 
 /* ---------- 音量 ---------- */
 // 記在 localStorage,同一支手機再玩不用重調。
-// 攤位共用耳機時每個人適合的音量不同,這是現場最常被按的東西。
 const VOL_KEY = 'pmsg_volume_v1';
 let volume = 0.8;
 try{
@@ -927,52 +732,9 @@ function playClip(q){
   return synthClip(q.song, CONFIG.clipSeconds);
 }
 
-/* ---------- 成績與幹部榜 ----------
+/* ---------- 成績 ---------- */
 
-   以前這裡是一整套 Supabase 的排行榜。遊戲在網路上散開之後那個做法垮了 ——
-   免費方案一個月 5GB 的流量,三天就用完;而且真正燒掉的是「讀」,
-   一萬多個人同時刷同一張榜。
-
-   現在換成完全不連線的兩張靜態表(在 crew.js 裡):
-
-     CREW        聯展前兩天社團的人自己玩出來的 55 個成績,真名真分數
-     SCORE_DIST  13,191 位玩家的分數分布,用來算「你贏過了多少%的玩家」
-
-   換掉之後玩家其實沒有失去什麼。八千人的榜上排第 1,240 名沒有感覺;
-   「你擊敗了 23 位流唱社幹部,再 89 分就能贏過兮兮」才有感 ——
-   而且後者一個請求都不用發。 */
-
-const CREW = (window.CREW || []).slice().sort((a, b) => b.score - a.score);
-
-/* 你的分數贏過多少玩家。SCORE_DIST 是每 250 分一階的累計人數,
-   中間用內插 —— 玩家要的是「我大概贏過幾成的人」,不是精確到個位數。 */
-function beatCount(score){
-  const d = window.SCORE_DIST || [];
-  if(!d.length) return 0;
-  if(score <= d[0][0]) return d[0][1];
-  if(score >= d[d.length - 1][0]) return d[d.length - 1][1];
-  for(let i = 0; i < d.length - 1; i++){
-    const [s0, n0] = d[i], [s1, n1] = d[i + 1];
-    if(score >= s0 && score <= s1) return n0 + (n1 - n0) * (score - s0) / (s1 - s0);
-  }
-  return d[d.length - 1][1];
-}
-
-function beatPercent(score){
-  return window.CREW_TOTAL ? Math.round(beatCount(score) / window.CREW_TOTAL * 100) : 0;
-}
-
-// 擊敗 = 分數嚴格高於對方。同分不算贏 —— 同分還敢說贏過人家很怪
-function crewBeaten(score){ return CREW.filter(c => score > c.score).length; }
-
-// 下一個目標:還沒被你超過的人裡面,分數最低的那一個
-function crewNext(score){
-  for(let i = CREW.length - 1; i >= 0; i--) if(CREW[i].score >= score) return CREW[i];
-  return null;
-}
-
-/* 成績只存在這支手機裡。留著是為了「你的最佳成績」和幹部榜上那一列 ——
-   沒有伺服器了,這是玩家唯一的紀錄。 */
+// 成績只存在這支手機裡,用來顯示「你的最佳成績」。
 const Store = {
   KEY: 'pmsg_scores_v1',
 
@@ -988,10 +750,9 @@ const Store = {
     try{ localStorage.setItem(this.KEY, JSON.stringify(list.slice(-50))); }catch(e){}
   },
 
-  /* 「你的最佳」和幹部榜上那一列,只認競速模式的分數。
-     闖關某一關的分數不能拿來比 —— 第 1 關只有華語 226 首,比全庫好猜太多,
-     拿那個去站幹部榜等於作弊。舊紀錄沒有 mode 欄位,那是還沒有闖關模式以前
-     存的,一律算競速。 */
+  /* 「你的最佳」只認競速模式的分數。
+     闖關某一關的分數不能拿來比 —— 第 1 關只有華語 226 首,比全庫好猜太多。
+     舊紀錄沒有 mode 欄位,那是還沒有闖關模式以前存的,一律算競速。 */
   best(){
     return this.all().reduce((m, r) => r.mode === 'stage' ? m : Math.max(m, r.score || 0), 0);
   },
@@ -1110,7 +871,6 @@ function buildQuestions(songs, quota){
 
 /* ---------- 遊戲狀態 ---------- */
 const G = {
-  nickname: '',
   questions: [], index: 0, total: 0, log: [],
   mode: 'speed', stage: 1,
   soundOk: false, timer: null, clip: null, deadline: 0, locked: false
@@ -1118,29 +878,10 @@ const G = {
 
 /* ---------- 開始畫面 ---------- */
 
-
-const BANNED = ['幹','靠北','白痴','智障','媽的','雞掰','三小','fuck','shit','bitch'];
-function nickError(v){
-  const n = v.trim();
-  if(n.length < 2) return '暱稱至少 2 個字';
-  if(n.length > 8) return '暱稱最多 8 個字';
-  const low = n.toLowerCase();
-  if(BANNED.some(w => low.includes(w))) return '這個暱稱會出現在公開螢幕上,換一個吧';
-  return null;
-}
-
 // 按鈕變灰卻不說原因,是這個畫面最容易卡住玩家的地方 ——
-// 攤位上沒人會停下來研究,他們只會覺得壞掉了然後走掉。
-// 所以按鈕上永遠寫著「還差什麼」,細節寫在暱稱欄底下。
+// 所以按鈕上永遠寫著「還差什麼」。
 function refreshStartBtn(){
-  const raw = $('nick').value;
-  const err = nickError(raw);
-  const typed = raw.trim().length > 0;
-
-  const why =
-    !typed     ? '請先輸入暱稱' :
-    err        ? '暱稱不能用'   :
-    !G.soundOk ? '請先測試聲音' : null;
+  const why = !G.soundOk ? '請先測試聲音' : null;
 
   for(const [id, label] of [['btn-speed','競速模式'], ['btn-stage','闖關模式']]){
     $(id).disabled = !!why;
@@ -1152,13 +893,9 @@ function refreshStartBtn(){
   $('speed-best').textContent = why ? ''
     : (Store.best() ? `你的最佳 ${Store.best().toLocaleString()} 分` : '十題,比分數');
 
-  // 還沒開始打字就跳錯誤訊息太兇,等他真的輸入了再說
-  showNickError(typed ? err : '');
-  // 暱稱過關但還沒測聲音時,把視線引到聲音那一區
-  $('sound').classList.toggle('want', !err && typed && !G.soundOk);
+  // 還沒測聲音時,把視線引到聲音那一區
+  $('sound').classList.toggle('want', !G.soundOk);
 }
-
-$('nick').addEventListener('input', refreshStartBtn);   // 訊息由 refreshStartBtn 統一決定
 
 $('btn-test').addEventListener('click', () => {
   const ctx = ensureCtx();
@@ -1195,16 +932,12 @@ $('btn-speed').addEventListener('click', () => startGame('speed'));
 $('btn-stage').addEventListener('click', () => startGame('stage'));
 $('btn-again').addEventListener('click', () =>
   G.mode === 'stage' ? startGame('stage') : show('screen-start'));
-$('btn-board-1').addEventListener('click', () => renderBoard(true));
-$('btn-board-2').addEventListener('click', () =>
-  G.mode === 'stage' ? show('screen-start') : renderBoard(true));
-$('btn-back').addEventListener('click', () => show('screen-start'));
+$('btn-home').addEventListener('click', () => show('screen-start'));
 
 /* ---------- 開局 ---------- */
 
 // 載入第一首。網路慢就等 —— 但要讓人看到在等什麼。
-// 默默改播示範音是最糟的選項:畫面不報錯,玩家整局猜不出來,
-// 關主也只會覺得「這些人怎麼都不會」。
+// 默默改播示範音是最糟的選項:畫面不報錯,玩家整局猜不出來。
 async function loadFirst(){
   const q = G.questions[0];
   q.audio = undefined;                 // 重試時要重新探測
@@ -1233,19 +966,7 @@ $('btn-retry').addEventListener('click', async () => {
   if(await loadFirst()){ show('screen-play'); nextQuestion(); }
 });
 
-function showNickError(msg){
-  const el = $('nick-err');
-  el.textContent = msg || '';
-  el.hidden = !msg;
-}
-
 async function startGame(mode){
-  const err = nickError($('nick').value);
-  if(err){ showNickError(err); return; }
-  showNickError('');
-
-  // 沒有共用的榜了,所以也沒有撞名問題 —— 暱稱只出現在這支手機上
-  G.nickname = $('nick').value.trim();
   G.mode = mode;
   G.stage = 1;
   await playRound();
@@ -1383,28 +1104,24 @@ function answer(opt, index){
    line  稱號底下那句話。想留白就寫成空字串 ''。
 
    想多一個或少一個級距,直接加減這張表的列,程式會自己跟上。
-   最後一列的 min 一定要是 0 —— 那是所有人都符合的保底。
-
-   聯展的領獎規則從來沒寫在畫面上(現場用講的),所以這張表就是玩家看到的全部。 */
+   最後一列的 min 一定要是 0 —— 那是所有人都符合的保底。 */
 
 const TITLES = [
-  { min: 8000, title: '流唱社之光',   line: '拜託你來我們流唱社當教學啦！' },
-  { min: 6767, title: '金曲點唱機',   line: '來流唱社你一定會找到很多志同道合喜歡聽歌的朋友！' },
-  { min: 5000, title: '移動 KTV',   line: '就差那麼一點點，要不要來參加流唱社！' },
-  { min: 3000, title: '持續聽歌中',    line: '來流唱社一定會大大增加你的曲庫~~' },
-  { min: 0,    title: '聽歌小萌新',     line: '沒關係,來流唱社聽一年就會了' },
+  { min: 8000, title: '金曲猜歌王',   line: '' },
+  { min: 6767, title: '金曲點唱機',   line: '' },
+  { min: 5000, title: '移動 KTV',    line: '' },
+  { min: 3000, title: '持續聽歌中',   line: '' },
+  { min: 0,    title: '聽歌小萌新',   line: '' },
 ];
 
 function titleFor(score){
   return TITLES.find(t => score >= t.min) || TITLES[TITLES.length - 1];
 }
 
-let freshTimer = null;
 function finish(){
   if(G.mode === 'stage') return finishStage();
 
   const entry = {
-    nickname: G.nickname,
     mode: 'speed',
     score: G.total,
     correct: G.log.filter(r => r.correct).length,
@@ -1412,49 +1129,19 @@ function finish(){
   };
   const prevBest = Store.best();
   Store.save(entry);
-  $('btn-board-2').textContent = '幹部榜';
-  $('btn-again').textContent   = '再玩一次';
+  $('btn-again').textContent = '再玩一次';
 
   const rank = titleFor(G.total);
   $('res-title').textContent = rank.title;
   $('res-line').textContent  = rank.line;
   $('res-score').textContent = G.total.toLocaleString();
+  $('res-meta').textContent  = `答對 ${entry.correct} 題,共 ${R.questionCount} 題`;
 
-  /* 兩個數字都在這支手機上算完,不連線:
-       擊敗幾位幹部 —— 有名有姓的對手,比抽象的名次好懂
-       贏過多少玩家 —— 每個人都有數字,不會出現「擊敗 0 位」的挫折 */
-  const beaten = crewBeaten(G.total);
-  $('res-meta').textContent =
-    `答對 ${entry.correct} 題,共 ${R.questionCount} 題` +
-    ` · 擊敗 ${beaten}/${CREW.length} 位幹部` +
-    ` · 贏過 ${beatPercent(G.total)}% 的玩家`;
-
-  // 差一點點就能超過某個人 —— 這是最好的「再玩一次」理由
-  const next = crewNext(G.total);
   const nextEl = $('res-next');
-  if(next){
-    const gap = next.score - G.total + 1;
-    nextEl.innerHTML = `再 <b>${gap.toLocaleString()}</b> 分就能贏過 <b>${escapeHtml(next.name)}</b>`;
-  }else{
-    nextEl.innerHTML = `<b>五十五位幹部全部擊敗</b> —— 沒有人在你前面了`;
-  }
-  nextEl.hidden = false;
-
-  if(prevBest && G.total > prevBest){
-    nextEl.innerHTML += `<br>這支手機的新紀錄(上次最好 ${prevBest.toLocaleString()} 分)`;
-  }
-
-  // 畫面上不寫任何領獎規則 —— 現場關主用講的。
-  // 這裡只留「幾分鐘前跑出來的」,關主一眼就能分辨現場成績和翻出來的舊截圖。
-  clearInterval(freshTimer);
-  const at = Date.now();
-  $('res-fresh').textContent = '剛剛完成';
-  freshTimer = setInterval(() => {
-    const el = $('res-fresh');
-    if(!el){ clearInterval(freshTimer); return; }
-    const s = Math.round((Date.now() - at) / 1000);
-    el.textContent = s < 60 ? `${s} 秒前完成` : `${Math.floor(s / 60)} 分鐘前完成`;
-  }, 1000);
+  nextEl.innerHTML = prevBest && G.total > prevBest
+    ? `這支手機的新紀錄(上次最好 ${prevBest.toLocaleString()} 分)`
+    : '';
+  nextEl.hidden = !nextEl.innerHTML;
 
   // 答錯的歌
   const missed = G.log.filter(r => !r.correct);
@@ -1491,7 +1178,7 @@ function finishStage(){
   const passed = G.total >= st.need;
   const cleared = passed ? G.stage : G.stage - 1;   // 真正過掉的關數
   Store.noteStage(cleared);
-  Store.save({ nickname: G.nickname, mode: 'stage', stage: cleared, score: G.total, at: Date.now() });
+  Store.save({ mode: 'stage', stage: cleared, score: G.total, at: Date.now() });
 
   if(!passed) return failStage(st);
 
@@ -1525,11 +1212,8 @@ function closePop(){
    分享出去的那句話是「我闖到第 3 關」,所以那句要在最上面。 */
 function failStage(st){
   closePop();
-  /* 這一頁的兩顆按鈕在兩個模式下是不同的東西:
-     幹部榜比的是競速模式那十題的分數,拿闖關某一關的分數去比沒有意義,
-     所以闖關的結算不給幹部榜,換成回首頁,而「再玩一次」直接從第 1 關重開。 */
-  $('btn-board-2').textContent = '回首頁';
-  $('btn-again').textContent   = '再闖一次';
+  // 闖關的「再玩一次」直接從第 1 關重開
+  $('btn-again').textContent = '再闖一次';
   const cleared = G.stage - 1;
   const gap = st.need - G.total;
   $('res-title').textContent = cleared > 0 ? `闖到第 ${cleared} 關` : '第 1 關就卡住了';
@@ -1551,67 +1235,11 @@ function failStage(st){
         `<li><b>${r.song.title}</b><span>${r.song.artist}</span></li>`).join('')}</ul>`
     : `<h4>全對</h4><div class="none">十題全中,但門檻是看分數的 —— 再快一點</div>`;
 
-  clearInterval(freshTimer);
-  $('res-fresh').textContent = '';
   show('screen-result');
 }
 
 $('btn-stage-go').addEventListener('click', () => { closePop(); G.stage++; playRound(); });
 $('btn-stage-quit').addEventListener('click', () => { closePop(); show('screen-start'); });
-
-/* ---------- 幹部榜 ---------- */
-
-function crewRowHtml(r){
-  const cls = ['rowitem'];
-  if(r.me) cls.push('me');
-  if(r.beaten) cls.push('beaten');
-  if(typeof r.rank === 'number' && r.rank <= 3) cls.push('top' + r.rank);   // 前三名的名次鍍金
-  return `<div class="${cls.join(' ')}">
-      <div class="rk">${r.rank}</div>
-      <div class="nm">${escapeHtml(r.name)}${r.tag ? `<span class="tag">${r.tag}</span>` : ''}</div>
-      <div class="sc">${r.score.toLocaleString()}</div>
-    </div>`;
-}
-
-/* 整張榜一次畫完(55 列,不會卡),你自己那一列插在該在的位置。
-   打開的時候捲到自己那裡 —— 玩家第一眼要看到的是「我在哪」,
-   不是第一名是誰。 */
-function renderBoard(){
-  show('screen-board');
-  const list = $('board-list'), note = $('board-note');
-  const best = Store.best();
-  const beaten = crewBeaten(best);
-
-  const rows = CREW.map((c, i) => ({
-    rank: i + 1, name: c.name, score: c.score,
-    beaten: best > c.score,
-    tag: best > c.score ? '已擊敗' : ''
-  }));
-
-  if(best > 0){
-    const at = rows.filter(r => r.score >= best).length;
-    rows.splice(at, 0, {
-      rank: '你', name: G.nickname || '你的最佳成績', score: best, me: true,
-      tag: `擊敗 ${beaten} 位`
-    });
-  }
-
-  list.innerHTML = rows.map(crewRowHtml).join('');
-
-  note.innerHTML = best > 0
-    ? `你的最佳 <b>${best.toLocaleString()}</b> 分 —— 擊敗 <b>${beaten}</b> / ${CREW.length} 位幹部;` +
-      `在所有玩家裡,你贏過了 <b>${beatPercent(best)}%</b> 的玩家。`
-    : `聯展前兩天,社團的人自己先玩了一輪 —— 這 ${CREW.length} 個成績都是真的。玩一局,看你能擊敗幾個。`;
-
-  // 只捲列表自己,不要用 scrollIntoView —— 那會連整頁一起捲,把標題推出畫面
-  const meRow = list.querySelector('.rowitem.me');
-  if(meRow) list.scrollTop = meRow.offsetTop - list.clientHeight / 2 + meRow.offsetHeight / 2;
-}
-
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c =>
-    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
 
 /* ---------- 電腦測試用:按 1–9 作答 ---------- */
 document.addEventListener('keydown', e => {
